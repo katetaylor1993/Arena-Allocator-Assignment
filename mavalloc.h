@@ -20,19 +20,27 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
-
+#ifndef __MAVALLOC_H
+#define __MAVALLOC_H
 
 #include <stddef.h>
 
 #define ALIGN4(s)  (((((s) - 1) >> 2) << 2) + 4)
 
-enum ALGORITHM
+typedef enum algo_enum
 {
   FIRST_FIT = 0,
   NEXT_FIT,
   BEST_FIT,
-  WORST_FIT
-}; 
+  WORST_FIT,
+  NO_ALGO
+} ALGORITHM; 
+
+typedef enum nodetype
+{
+    HOLE = 0,
+    PALLOC
+} NODE_TYPE;
 
 /**
  * @brief Initialize the allocation arena and set the algorithm type
@@ -47,7 +55,7 @@ enum ALGORITHM
  * \param algorithm The heap algorithm to implement
  * \return 0 on success. -1 on failure
  **/
-int mavalloc_init( size_t size, enum ALGORITHM algorithm );
+int mavalloc_init( size_t size, ALGORITHM algorithm );
 
 
 /**
@@ -97,4 +105,6 @@ void mavalloc_free(void *ptr);
  * \return The size of the allocator linked list 
  */
 int mavalloc_size( );
+
+#endif
 

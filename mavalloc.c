@@ -23,30 +23,79 @@
 
 #include "mavalloc.h"
 
-int mavalloc_init( size_t size, enum ALGORITHM algorithm )
+#include <stdint.h>
+#include <stdlib.h>
+
+// setting up a double-linked list
+typedef struct arena_node_struct
 {
-  return 0;
+    NODE_TYPE type;
+    struct arena_node_struct * prev;
+    struct arena_node_struct * next;
+    void * data;
+    uint64_t size;
+} arena_node;
+
+// This pointer is a const because if it does not stay at the same address 
+// through the life of the program, could lead to memory leak.
+static arena_node * const g_head = {0};
+static ALGORITHM g_algo = NO_ALGO;
+    
+
+int mavalloc_init(size_t size, ALGORITHM algorithm)
+{
+    if(size < 0)
+    {
+        return -1;
+    }
+    
+    ALIGN4(size);
+    g_algo = algorithm;
+    *g_head = (arena_node){
+        .type = HOLE, 
+        .prev = NULL, 
+        .next = NULL, 
+        .data = malloc(size), 
+        .size = size
+    };
+    
+    if(g_head->data == NULL)
+    {
+        return -1;
+    }
+    
+    return 0;
 }
 
 void mavalloc_destroy( )
 {
-  return;
+    free(g_head->data);
+    return;
 }
 
-void * mavalloc_alloc( size_t size )
+void * mavalloc_alloc(size_t size)
 {
-  // only return NULL on failure
-  return NULL;
+    // only return NULL on failure
+    return NULL;
 }
 
-void mavalloc_free( void * ptr )
+void mavalloc_free(void * ptr)
 {
-  return;
+    
+    return;
 }
 
-int mavalloc_size( )
+int mavalloc_size()
 {
-  int number_of_nodes = 0;
+    int number_of_nodes = 0;
+    if(g_head->data != NULL)
+    {
+        number_of_nodes = 1;
+        while(g_head->next != NULL)
+        {
+            number_of_nodes++;
+        }
+    }
 
-  return number_of_nodes;
+    return number_of_nodes;
 }
