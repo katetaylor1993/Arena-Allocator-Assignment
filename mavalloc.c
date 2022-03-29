@@ -67,12 +67,15 @@ int mavalloc_init(size_t size, ALGORITHM algorithm)
     return 0;
 }
 
+// Note: this is not done yet
 void mavalloc_destroy( )
 {
+    //TODO: free nodes too
     free(g_head->data);
     return;
 }
 
+// Note: According to professor, you must use malloc here to create nodes
 void * mavalloc_alloc(size_t size)
 {
     // only return NULL on failure
@@ -81,7 +84,21 @@ void * mavalloc_alloc(size_t size)
 
 void mavalloc_free(void * ptr)
 {
+    if(ptr == NULL)
+        return;
+    arena_node * current = g_head;
+    arena_node * hit = NULL;
+    do
+    {
+        if(ptr == current->data)
+        {
+            hit = current;
+            break;
+        }
+    } while(current != NULL);
     
+    // coalesce using a truth table
+    // then free the node
     return;
 }
 
