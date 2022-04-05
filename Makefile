@@ -7,13 +7,13 @@ LIBRARIES=      lib/libmavalloc.a
 all:   unit_test 
 
 unit_test: main.o libmavalloc.a
-	gcc -o unit_test main.o -L. -lmavalloc
+	gcc -o unit_test -g main.o -L. -lmavalloc
 
 main.o: main.c
-	gcc -O -c main.c 
+	gcc -O -g -c main.c 
 
 mavalloc.o: mavalloc.c
-	gcc -O -c mavalloc.c
+	gcc -O -g -c mavalloc.c
 
 libmavalloc.a: mavalloc.o
 	ar rcs libmavalloc.a mavalloc.o
