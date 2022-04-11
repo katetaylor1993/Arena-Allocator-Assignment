@@ -250,10 +250,12 @@ void mavalloc_free(void *ptr)
 
     // coalesce
     arena_node *hit_copy = hit;
+    int prevHole = 0;
     if (hit->prev != NULL)
     {
         if (hit->prev->type == HOLE)
         {
+            prevHole = 1;
             hit->prev->next = hit->next;
             hit->prev->size += hit->size;
             hit = hit->prev;
@@ -263,8 +265,18 @@ void mavalloc_free(void *ptr)
     {
         if (hit->next->type == HOLE)
         {
-            hit->next->prev = hit->prev;
-            hit->next->size += hit->size;
+            if (prevHole)
+            {
+                arena_node * hit_copy_2 = hit->next;
+                hit->size += hit->next->size;
+                hit->next = hit->next->next;
+                free(hit_copy_2);
+            }
+            else
+            {
+                hit->next->prev = hit->prev;
+                hit->next->size += hit->size;
+            }
         }
     }
     free(hit_copy);
