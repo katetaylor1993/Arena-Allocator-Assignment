@@ -28,6 +28,12 @@
 #include <stdlib.h>
 #include <limits.h>
 
+typedef enum nodetype
+{
+    HOLE = 0,
+    PALLOC
+} NODE_TYPE;
+
 // setting up a double-linked list
 typedef struct arena_node_struct
 {
@@ -40,9 +46,9 @@ typedef struct arena_node_struct
 
 static arena_node *g_head;
 static arena_node *g_tail;
-static ALGORITHM g_algo = NO_ALGO;
+static enum ALGORITHM g_algo = FIRST_FIT;
 
-int mavalloc_init(size_t size, ALGORITHM algorithm)
+int mavalloc_init(size_t size, enum ALGORITHM algorithm)
 {
     if (size < 0)
     {
@@ -65,10 +71,6 @@ int mavalloc_init(size_t size, ALGORITHM algorithm)
     }
 
     g_algo = algorithm;
-    if (g_algo == NO_ALGO)
-    {
-        return -1;
-    }
 
     return 0;
 }
