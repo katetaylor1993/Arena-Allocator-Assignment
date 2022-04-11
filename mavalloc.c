@@ -288,6 +288,7 @@ void mavalloc_free(void *ptr)
             hit->type = HOLE;
         }
     }
+    /*
     //TODO: remove this
     arena_node * test = g_head;
     //printf("%p: size %ld next %p prev %p\n",g_head->prev,g_head->prev->size,g_head->prev->next,g_head->prev->prev);
@@ -296,6 +297,7 @@ void mavalloc_free(void *ptr)
       printf("%p: size %ld next %p prev %p\n",test,test->size,test->next,test->prev);
       test = test->next;
     }
+    */
     return;
 }
 
