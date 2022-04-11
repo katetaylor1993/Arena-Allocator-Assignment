@@ -8,5 +8,5 @@ int main()
   void* second = mavalloc_alloc(256);
   void* third = mavalloc_alloc(256);
 
-  mavalloc_free(second);
+  mavalloc_free(third);
 }

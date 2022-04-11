@@ -225,6 +225,7 @@ void *mavalloc_alloc(size_t size)
         }
     }
     // only return NULL on failure
+    g_head->prev = NULL;
 
     return NULL;
 }
@@ -251,6 +252,7 @@ void mavalloc_free(void *ptr)
     // coalesce
     arena_node *hit_copy = hit;
     int prevHole = 0;
+    int keepHit = 1;
     if (hit->prev != NULL)
     {
         if (hit->prev->type == HOLE)
@@ -259,6 +261,8 @@ void mavalloc_free(void *ptr)
             hit->prev->next = hit->next;
             hit->prev->size += hit->size;
             hit = hit->prev;
+            free(hit_copy);
+            keepHit = 0;
         }
     }
     if (hit->next != NULL)
@@ -277,9 +281,21 @@ void mavalloc_free(void *ptr)
                 hit->next->prev = hit->prev;
                 hit->next->size += hit->size;
             }
+            keepHit = 0;
+        }
+        if(keepHit)
+        {
+            hit->type = HOLE;
         }
     }
-    free(hit_copy);
+    //TODO: remove this
+    arena_node * test = g_head;
+    //printf("%p: size %ld next %p prev %p\n",g_head->prev,g_head->prev->size,g_head->prev->next,g_head->prev->prev);
+    while(test!=NULL)
+    {
+      printf("%p: size %ld next %p prev %p\n",test,test->size,test->next,test->prev);
+      test = test->next;
+    }
     return;
 }
 
