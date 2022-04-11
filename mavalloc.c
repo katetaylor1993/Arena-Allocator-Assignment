@@ -38,6 +38,7 @@ typedef struct arena_node_struct
 } arena_node;
 
 static arena_node * g_head;
+static arena_node * previous_node;
 static ALGORITHM g_algo = NO_ALGO;
 
 
@@ -74,6 +75,7 @@ int mavalloc_init(size_t size, ALGORITHM algorithm)
 // Note: this is not done yet
 void mavalloc_destroy( )
 {
+    free(g_head->data)
     arena_node * current = g_head;
     arena_node * current_copy = NULL;
     while(current != NULL)
@@ -82,16 +84,61 @@ void mavalloc_destroy( )
         current = current->next;
         free(current_copy);
     }
-    free(g_head->data);
     return;
 }
 
 // Note: According to professor, you must use malloc here to create nodes
 void * mavalloc_alloc(size_t size)
 {
-    // only return NULL on failure
+    arena_node * node;
 
-    return NULL;
+    if(g_algo != NEXT_FIT)
+    {
+        node = g_head;
+    }
+    else if (g_algo == NEXT_FIT)
+    {
+        node = previous_node;
+    }
+    else
+    {
+        printf("ERROR: Unknown allocation algorithm!\n");
+        exit(0);
+    }
+
+    size_t aligned_size = ALIGN4(size);
+
+    if(g_algo == FIRST_FIT)
+    {
+        while(node)
+        {
+            if(node->size >= aligned_size  && node->type == HOLE)
+            {
+                int leftover_size = 0;
+
+                node->type  = PALLOC;
+                leftover_size = node->size - aligned_size;
+                node->size =  aligned_size;
+
+                if(leftover_size > 0)
+                {
+                    arena_node * previous_next = node->next;
+                    arena_node * leftover_node = (arena_node *) malloc (sizeof(arena_node));
+
+                    leftover_node->data = node->data + size;
+                    leftover_node->type  = HOLE;
+                    leftover_node->size  = leftover_size;
+                    leftover_node->next  = previous_next;
+                    leftover_node->prev  = node;
+
+                    node->next = leftover_node;
+                }
+                previous_node = node;
+                return (void *) node->data;
+            }
+            node = node->next;
+        }
+    }
 }
 
 void mavalloc_free(void * ptr)
