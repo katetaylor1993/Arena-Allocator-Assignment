@@ -135,7 +135,7 @@ void *mavalloc_alloc(size_t size)
                     arena_node *previous_next = node->next;
                     arena_node *leftover_node = (arena_node *)malloc(sizeof(arena_node));
 
-                    leftover_node->data = node->data + size;
+                    leftover_node->data = malloc(leftover_size);
                     leftover_node->type = HOLE;
                     leftover_node->size = leftover_size;
                     leftover_node->next = previous_next;
@@ -172,11 +172,13 @@ void *mavalloc_alloc(size_t size)
                 {
                     current_best = leftover_size;
                     best = node;
+                    best->data = node->data;
                 }
                 if (leftover_size > current_worst)
                 {
                     current_worst = leftover_size;
                     worst = node;
+                    worst->data = node->data;
                 }
             }
             node = node->next;
@@ -185,13 +187,16 @@ void *mavalloc_alloc(size_t size)
         {
             best->type = PALLOC;
             best->size = current_best - aligned_size;
+
             leftover = current_best - aligned_size;
+
             if (leftover > 0)
             {
-                arena_node *previous_next = best->next;
+                arena_node *previous_next = (arena_node *)malloc(sizeof(arena_node));
+                previous_next = best->next;
                 arena_node *leftover_node = (arena_node *)malloc(sizeof(arena_node));
 
-                leftover_node->data = best->data + size;
+                leftover_node->data = malloc(leftover);
                 leftover_node->type = HOLE;
                 leftover_node->size = leftover;
                 leftover_node->next = previous_next;
@@ -207,12 +212,13 @@ void *mavalloc_alloc(size_t size)
             worst->type = PALLOC;
             worst->size = current_worst - aligned_size;
             leftover = current_worst - aligned_size;
+
             if (leftover > 0)
             {
                 arena_node *previous_next = worst->next;
                 arena_node *leftover_node = (arena_node *)malloc(sizeof(arena_node));
 
-                leftover_node->data = worst->data + size;
+                leftover_node->data = malloc(leftover);
                 leftover_node->type = HOLE;
                 leftover_node->size = leftover;
                 leftover_node->next = previous_next;
@@ -225,7 +231,6 @@ void *mavalloc_alloc(size_t size)
         }
     }
     // only return NULL on failure
-    g_head->prev = NULL;
 
     return NULL;
 }
@@ -271,7 +276,7 @@ void mavalloc_free(void *ptr)
         {
             if (prevHole)
             {
-                arena_node * hit_copy_2 = hit->next;
+                arena_node *hit_copy_2 = hit->next;
                 hit->size += hit->next->size;
                 hit->next = hit->next->next;
                 free(hit_copy_2);
@@ -283,18 +288,18 @@ void mavalloc_free(void *ptr)
             }
             keepHit = 0;
         }
-        if(keepHit)
+        if (keepHit)
         {
             hit->type = HOLE;
         }
     }
-    //TODO: remove this
-    arena_node * test = g_head;
-    //printf("%p: size %ld next %p prev %p\n",g_head->prev,g_head->prev->size,g_head->prev->next,g_head->prev->prev);
-    while(test!=NULL)
+    // TODO: remove this
+    arena_node *test = g_head;
+    // printf("%p: size %ld next %p prev %p\n",g_head->prev,g_head->prev->size,g_head->prev->next,g_head->prev->prev);
+    while (test != NULL)
     {
-      printf("%p: size %ld next %p prev %p\n",test,test->size,test->next,test->prev);
-      test = test->next;
+        printf("%p: size %ld next %p prev %p\n", test, test->size, test->next, test->prev);
+        test = test->next;
     }
     return;
 }
@@ -304,7 +309,7 @@ int mavalloc_size()
     int number_of_nodes = 0;
     if (g_head->data != NULL)
     {
-        arena_node * current = g_head->next;
+        arena_node *current = g_head->next;
         number_of_nodes = 1;
         while (current != NULL)
         {
